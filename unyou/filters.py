@@ -3,6 +3,7 @@ from django_filters import FilterSet
 from .models import Unyou
 
 
+
 class MyOrderingFilter(filters.OrderingFilter):
  descending_fmt = '%s （降順）'
 
@@ -48,3 +49,18 @@ class UnyouFilter(FilterSet):
     class Meta:
         model = Unyou
         fields = ('lbc', 'main_lbc', 'Industry_id1','group_top_lbc1','municipality_name','company_name')
+
+
+
+    def handle(self, *args, **options):
+        def get(self, request, **kwargs):
+            if request.GET:
+                    request.session['query'] = request.GET
+            else:
+                    request.GET = request.GET.copy()
+                    if 'query' in request.session.keys():
+                        for key in request.session['query'].keys():
+                            request.GET[key] = request.session['query'][key]
+
+            return super().get(request, **kwargs)
+

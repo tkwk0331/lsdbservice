@@ -2,6 +2,8 @@ from django.urls import path
 from .views import UnyouFilterView, UnyouDetailView, UnyouCreateView, UnyouUpdateView, UnyouDeleteView
 from django.contrib import admin
 from django.urls import path, include
+from . import views
+
 
 urlpatterns = [
     # 一覧画面
@@ -14,5 +16,8 @@ urlpatterns = [
     path('update/<int:pk>/', UnyouUpdateView.as_view(), name='update'),
     # 削除画面
     path('delete/<int:pk>/', UnyouDeleteView.as_view(), name='delete'),
-    ]
+
+    path('export/', views.post_export, name='export'),
+
+]
 
