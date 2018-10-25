@@ -4,7 +4,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django_filters import FilterSet, filters
 from django_filters.views import FilterView
-
+from django.db import transaction
 from pure_pagination.mixins import PaginationMixin
 from .models import Unyou
 from .filters import UnyouFilter, MyOrderingFilter
@@ -18,6 +18,14 @@ import io
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views import generic
+from datetime import datetime, timedelta, date
+from pytz import timezone, utc
+from django.core.management.base import BaseCommand
+from django.db import transaction
+import csv
+import gzip
+import shutil
+import os
 
 
 
@@ -55,23 +63,9 @@ def post_export(request):
     response['Content-Disposition'] = 'attachment; filename="posts.csv"'
     # HttpResponseオブジェクトはファイルっぽいオブジェクトなので、csv.writerにそのまま渡せます。
 
+    yossya = Unyou.objects
+
     model = Unyou
-    filterset_class = UnyouFilter
-
-    queryset = Unyou.objects.all()
-
-    def get(self, request, **kwargs):
-        if request.GET:
-            request.session['query'] = request.GET
-        else:
-            request.GET = request.GET.copy()
-            if 'query' in request.session.keys():
-                for key in request.session['query'].keys():
-                    request.GET[key] = request.session['query'][key]
-
-        return super().get(request, **kwargs)
-
-    model = queryset.model
     writer = csv.writer(response)
 
     headers = []
@@ -80,7 +74,7 @@ def post_export(request):
         writer.writerow(headers)
 
 
-    for obj in queryset:
+    for obj in yossya:
         row = []
         for field in headers:
             val = getattr(obj, field)
@@ -90,10 +84,7 @@ def post_export(request):
             writer.writerow(row)
 
         return response
-    '''
-    model = Unyou
-    filterset_class = UnyouFilter
-    object = Unyou
+
 
     def get(self, request, **kwargs):
         if request.GET:
@@ -135,7 +126,7 @@ def post_export(request):
                 shutil.copyfileobj(gzip_in, gzip_out)
 
         os.remove(filename)
-        '''
+
 
 
 
